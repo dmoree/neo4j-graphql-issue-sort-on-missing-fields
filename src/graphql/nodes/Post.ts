@@ -2,7 +2,7 @@ import { gql } from 'graphql-tag'
 
 const typeDefs = gql`
   type Post {
-    id: ID! @id
+    id: ID!
     title: String!
     content: String!
     blog: Blog! @relationship(type: "HAS_POST", direction: IN)

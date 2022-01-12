@@ -9,18 +9,14 @@ import {
 } from '@issue/neo4j/database'
 import { ogm } from '@issue/neo4j/graphql'
 
+const alphabet = 'abcdefg'
+
 export const seed = async () => {
-  const [User, Blog, Post, Comment] = ['User', 'Blog', 'Post', 'Comment'].map(
-    (name) => ogm.model(name)
-  )
+  const [User, Blog] = ['User', 'Blog'].map((name) => ogm.model(name))
 
-  const defaultEmail = 'admin@admin.com'
-  const defaultPassword = 'password'
-
-  const { users } = await User.create({
+  const { users }: { users: User[] } = await User.create({
     input: await Promise.all(
       [
-        [defaultEmail, defaultPassword],
         [faker.internet.email(), faker.internet.password()],
         [faker.internet.email(), faker.internet.password()],
       ].map(async ([email, password]) => {
@@ -33,16 +29,18 @@ export const seed = async () => {
   })
 
   await Blog.create({
-    input: users.map((user: User) => {
+    input: users.map((user: User, i) => {
       return {
-        name: faker.lorem.word(),
+        id: i + 1,
+        name: alphabet[i],
         creator: {
           connect: { where: { node: { id: user.id } } },
         },
         posts: {
-          create: new Array(1).fill(null).map(() => ({
+          create: new Array(2).fill(null).map((_, index) => ({
             node: {
-              title: faker.lorem.word(),
+              id: index + 1 + (i + 1) * 2,
+              title: alphabet[index + 1 + (i + 1) * 2],
               content: faker.lorem.paragraphs(4),
               author: {
                 connect: { where: { node: { id: user.id } } },
